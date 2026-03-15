@@ -8,8 +8,10 @@ Gem::Specification.new do |spec|
   spec.authors = ["Demetrious Wilson"]
   spec.email = ["demetriouswilson@gmail.com"]
 
-  spec.summary = "TODO: Write a short summary, because RubyGems requires one."
-  spec.description = "TODO: Write a longer description or delete this line."
+  spec.summary = "Rails-first GraphQL with an Alba-inspired declarative DSL"
+  spec.description = "Wraps graphql-ruby with a convention-over-configuration approach. " \
+                      "Declare resources with a simple DSL and get types, queries, mutations, " \
+                      "and subscriptions auto-generated from your ActiveRecord models."
   spec.homepage = "https://github.com/taywils/quail"
   spec.license = "MIT"
   spec.required_ruby_version = ">= 3.2.0"
@@ -31,8 +33,10 @@ Gem::Specification.new do |spec|
   spec.executables = spec.files.grep(%r{\Aexe/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
 
-  # Uncomment to register a new dependency of your gem
-  # spec.add_dependency "example-gem", "~> 1.0"
+  # Gem Dependencies
+  spec.add_dependency "graphql", ">= 2.0"
+  spec.add_dependency "railties", ">= 7.0"
+  spec.add_dependency "activerecord", ">= 7.0"
 
   # For more information and examples about making a new gem, check out our
   # guide at: https://bundler.io/guides/creating_gem.html

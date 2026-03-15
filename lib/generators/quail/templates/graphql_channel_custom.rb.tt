@@ -1,0 +1,23 @@
+# Customizable GraphQL subscription channel.
+# Override context_for_subscription to inject your own auth context.
+class GraphqlChannel < Quail::Channel
+  private
+
+  # Add your auth context here. This is passed to every subscription query.
+  # Example:
+  #
+  # def context_for_subscription
+  #   {
+  #     channel: self,
+  #     current_user: find_verified_user
+  #   }
+  # end
+  #
+  # def find_verified_user
+  #   # Your auth logic - token-based, cookie-based, JWT, etc...
+  # end
+  #
+  def context_for_subscription
+    { channel: self }
+  end
+end

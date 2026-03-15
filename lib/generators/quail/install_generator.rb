@@ -21,9 +21,11 @@ module Quail
         default: false,
         desc: "Skip generating the ActionCable channel"
 
-      def create_resource_directory
-        empty_directory "app/graphql/resources"
-        create_file "app/graphql/resources/.keep"
+      def create_graphql_directories
+        %w[resources mutations queries types].each do |dir|
+          empty_directory "app/graphql/#{dir}"
+          create_file "app/graphql/#{dir}/.keep"
+        end
       end
 
       def create_schema

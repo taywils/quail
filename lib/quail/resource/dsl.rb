@@ -13,14 +13,14 @@ module Quail
             @model_class ||= name.delete_suffix("Resource").constantize
           end
         end
-        alias_method :model_class, :model
+        alias model_class model
 
         def attribute_definitions
           @attribute_definitions ||= {}
         end
 
         def attributes(*names)
-          names.each { |name| attribute_definitions[name] = { type: :column  }}
+          names.each { |name| attribute_definitions[name] = { type: :column } }
         end
 
         def attribute(name, type: nil, null: nil, &block)
@@ -75,10 +75,11 @@ module Quail
           if scope && !scope.is_a?(Symbol) && !scope.is_a?(Hash)
             raise ArgumentError, "subscribe_on scope: must be a Symbol or Hash { key: proc }, got #{scope.class}"
           end
+
           events.each { |event| subscription_definitions[event.to_sym] = { scope: scope } }
         end
 
-        def skip_queries(**actions)
+        def skip_queries(*actions)
           @skipped_queries = actions.map(&:to_sym)
         end
 

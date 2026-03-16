@@ -4,6 +4,7 @@ require "rails/generators/base"
 
 module Quail
   module Generators
+    # Generates a Quail resource file for a given ActiveRecord model.
     class ResourceGenerator < Rails::Generators::NamedBase
       desc "Generate a Quail resource for a model. Usage: rails g quail:resource Article"
       source_root File.expand_path("templates", __dir__)

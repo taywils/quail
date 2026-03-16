@@ -4,6 +4,7 @@ require "rails/generators/base"
 
 module Quail
   module Generators
+    # Sets up Quail in a Rails app: schema, controller, channel, initializer, and directories.
     class InstallGenerator < Rails::Generators::Base
       desc "Set up Quail: schema, controller, route, initializer, and resource directory"
       source_root File.expand_path("templates", __dir__)

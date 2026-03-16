@@ -2,11 +2,13 @@
 
 module Quail
   module Resource
+    # DSL for declaring attributes, associations, mutations, and subscriptions on a resource.
     module DSL
       def self.included(base)
         base.extend ClassMethods
       end
 
+      # Class-level DSL methods mixed into resource classes.
       module ClassMethods
         def model(klass = nil)
           if klass

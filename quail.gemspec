@@ -10,8 +10,8 @@ Gem::Specification.new do |spec|
 
   spec.summary = "Rails-first GraphQL with an Alba-inspired declarative DSL"
   spec.description = "Wraps graphql-ruby with a convention-over-configuration approach. " \
-                      "Declare resources with a simple DSL and get types, queries, mutations, " \
-                      "and subscriptions auto-generated from your ActiveRecord models."
+                     "Declare resources with a simple DSL and get types, queries, mutations, " \
+                     "and subscriptions auto-generated from your ActiveRecord models."
   spec.homepage = "https://github.com/taywils/quail"
   spec.license = "MIT"
   spec.required_ruby_version = ">= 3.2.0"
@@ -19,6 +19,7 @@ Gem::Specification.new do |spec|
   spec.metadata["allowed_push_host"] = "TODO: Set to your gem server 'https://example.com'"
   spec.metadata["homepage_uri"] = spec.homepage
   spec.metadata["source_code_uri"] = "https://github.com/taywils/quail"
+  spec.metadata["rubygems_mfa_required"] = "true"
 
   # Specify which files should be added to the gem when it is released.
   # The `git ls-files -z` loads the files in the RubyGem that have been added into git.

@@ -16,12 +16,14 @@ require_relative "quail/controller_helpers"
 require_relative "quail/channel"
 require_relative "quail/railtie"
 
+# Top-level namespace for the Quail GraphQL resource framework.
 module Quail
   class Error < StandardError; end
 
   Mutation = GraphQL::Schema::RelayClassicMutation
   Object = GraphQL::Schema::Object
 
+  # Base resolver class for custom Quail queries with symbol-based type resolution.
   class Query < GraphQL::Schema::Resolver
     # Allows symbol-based type references that resolve to resource graphql types.
     #
@@ -29,13 +31,13 @@ module Quail
     # type [:article], null: false  # resolves to [ArticleResource.graphql_type]
     # type Types::SessionType, null: false # pass-through, works as normal
     #
-    def self.type(type_arg = nil, **kwargs)
+    def self.type(type_arg = nil, **)
       if type_arg.is_a?(Symbol)
         resource_name = type_arg
-        super(-> { resolve_resource_type(resource_name) }, **kwargs)
+        super(-> { resolve_resource_type(resource_name) }, **)
       elsif type_arg.is_a?(Array) && type_arg.length == 1 && type_arg.first.is_a?(Symbol)
         resource_name = type_arg.first
-        super(-> { [resolve_resource_typ(resource_name)] }, **kwargs)
+        super(-> { [resolve_resource_typ(resource_name)] }, **)
       else
         super
       end

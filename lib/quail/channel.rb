@@ -1,21 +1,13 @@
 # frozen_string_literal: true
 
 module Quail
+  # ActionCable channel for handling GraphQL subscriptions over WebSocket.
   class Channel < ActionCable::Channel::Base
     def subscribed
       @subscription_ids = []
-
-      result = schema_class.execute(
-        params[:query],
-        context: context_for_subscription,
-        variables: ensure_hash(params[:variables]),
-        operation_name: params[:operation_name]
-      )
-
-      payload = { result: result.to_h, more: result.subscription? }
-      @subscription_ids << result.context[:subscription_id] if result.context[:subscription_id]
-
-      transmit(payload)
+      result = execute_query
+      track_subscription(result)
+      transmit(result: result.to_h, more: result.subscription?)
     end
 
     def unsubscribed
@@ -25,6 +17,19 @@ module Quail
     end
 
     private
+
+    def execute_query
+      schema_class.execute(
+        params[:query],
+        context: context_for_subscription,
+        variables: ensure_hash(params[:variables]),
+        operation_name: params[:operation_name]
+      )
+    end
+
+    def track_subscription(result)
+      @subscription_ids << result.context[:subscription_id] if result.context[:subscription_id]
+    end
 
     def context_for_subscription
       { channel: self }

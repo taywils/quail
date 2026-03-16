@@ -34,14 +34,14 @@ end
 unless defined?(ActionCable)
   module ActionCable
     module Channel
-      class Base; end
+      class Base; end # rubocop:disable Lint/EmptyClass
     end
   end
 end
 
 unless defined?(ActionController)
   module ActionController
-    class Parameters; end
+    class Parameters; end # rubocop:disable Lint/EmptyClass
   end
 end
 
@@ -55,6 +55,6 @@ require "minitest/autorun"
 # Quail::TypeMap and the builders rely on.
 FakeColumn = Data.define(:name, :type, :null) do
   def initialize(name:, type: :string, null: true)
-    super(name: name, type: type, null: null)
+    super
   end
 end

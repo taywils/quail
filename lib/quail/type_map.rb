@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 module Quail
+  # Maps ActiveRecord column types to their corresponding GraphQL type classes.
   module TypeMap
     MAPPING = {
       integer: GraphQL::Types::Int,

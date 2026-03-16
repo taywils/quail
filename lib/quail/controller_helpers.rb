@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 module Quail
+  # Provides shared helper methods for GraphQL controllers,
+  # including request parameter normalization and development error handling.
   module ControllerHelpers
     extend ActiveSupport::Concern
 

@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 module Quail
+  # Rails integration for Quail: configures eager loading and schema resolution.
   class Railtie < Rails::Railtie
     config.quail = ActiveSupport::OrderedOptions.new
     config.quail.schema_class = nil

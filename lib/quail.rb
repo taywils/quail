@@ -24,11 +24,11 @@ module Quail
 
   class Query < GraphQL::Schema::Resolver
     # Allows symbol-based type references that resolve to resource graphql types.
-    # 
+    #
     # type :user, null: true        # resolves to UserResource.graphql_type
     # type [:article], null: false  # resolves to [ArticleResource.graphql_type]
     # type Types::SessionType, null: false # pass-through, works as normal
-    # 
+    #
     def self.type(type_arg = nil, **kwargs)
       if type_arg.is_a?(Symbol)
         resource_name = type_arg

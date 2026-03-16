@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Quail
   module Resource
     module DSL
@@ -10,7 +12,7 @@ module Quail
           if klass
             @model_class = klass
           else
-            @model_class ||= name.delete_suffix("Resource").constantize
+            @model ||= name.delete_suffix("Resource").constantize
           end
         end
         alias model_class model

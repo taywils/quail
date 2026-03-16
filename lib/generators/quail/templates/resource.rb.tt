@@ -10,7 +10,7 @@ class <%= class_name %>Resource
 <% end -%>
 <% if writable_attribute_names.any? -%>
 
-  writable_attribute_names <%= writable_attribute_names.map { |a| ":#{a}" }.join(", ") %>
+  writable_attributes <%= writable_attribute_names.map { |a| ":#{a}" }.join(", ") %>
 <% end -%>
 <% if options[:skip_mutations].any? -%>
 

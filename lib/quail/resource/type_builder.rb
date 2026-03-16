@@ -1,12 +1,12 @@
+# frozen_string_literal: true
+
 module Quail
   module Resource
     module TypeBuilder
       def self.build_all
         Quail.registry.each_value do |resource_class|
           build_scalar_fields(resource_class)
-        end
 
-        Quail.registry.each_value do |resource_class|
           add_association_fields(resource_class)
         end
       end
@@ -26,13 +26,13 @@ module Quail
             if config[:type] == :column
               col = model.columns_hash[name.to_s]
               if col
-                field name, TypeMap.graphql_type(col), null: TypeMap.nullable?(col)
+                field name, TypeMap.graphql_types(col), null: TypeMap.nullable?(col)
               else
                 field name, GraphQL::Types::String, null: true
               end
             elsif config[:types] == :computed
               gql_type = config[:graphql_type] || GraphQL::Types::String
-              nullable = config[:null].nil? ? true : config[:null]
+              nullable = config[:null].nil? || config[:null]
               blk = config[:block]
               field name, gql_type, null: nullable
               define_method(name) { blk.call(object) }

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 namespace :quail do
   desc "Export the GraphQL schema to SDL (schema.graphql)"
   task dump: :environment do

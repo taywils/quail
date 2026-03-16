@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Quail
   class Channel < ActionCable::Channel::Base
     def subscribed

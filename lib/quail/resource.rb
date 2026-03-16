@@ -1,8 +1,10 @@
+# frozen_string_literal: true
+
 module Quail
   module Resource
-    def self.include(base)
+    def self.included(base)
       base.include DSL
-      base.include Lookup
+      base.extend Lookup
 
       Quail.register(base)
     end

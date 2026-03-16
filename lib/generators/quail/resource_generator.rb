@@ -1,4 +1,6 @@
-require 'rails/generators/base'
+# frozen_string_literal: true
+
+require "rails/generators/base"
 
 module Quail
   module Generators
@@ -7,25 +9,25 @@ module Quail
       source_root File.expand_path("templates", __dir__)
 
       class_option :attributes,
-        type: :array,
-        default: [],
-        desc: "Attributes to expose (default: all columns)"
+                   type: :array,
+                   default: [],
+                   desc: "Attributes to expose (default: all columns)"
 
       class_option :skip_mutations,
-        type: :array,
-        default: [],
-        desc: "Mutations to skip: create update delete"
+                   type: :array,
+                   default: [],
+                   desc: "Mutations to skip: create update delete"
 
       class_option :skip_queries,
-        type: :array,
-        default: [],
-        desc: "Queries to skip: find list"
+                   type: :array,
+                   default: [],
+                   desc: "Queries to skip: find list"
 
       class_option :subscribe_on,
-        type: :array,
-        default: [],
-        desc: "Events to subscribe on: create update delete"
-      
+                   type: :array,
+                   default: [],
+                   desc: "Events to subscribe on: create update delete"
+
       def create_resource
         template "resource.rb.tt", "app/graphql/resources/#{file_name}_resource.rb"
       end
@@ -53,9 +55,9 @@ module Quail
 
         model_class.reflect_on_all_associations.map do |association|
           case association.macro
-          when :has_many    then "  has_many :#{assoc.name}"
-          when :has_one     then "  has_one :#{assoc.name}"
-          when :belongs_to  then "  belongs_to :#{assoc.name}"
+          when :has_many    then "  has_many :#{association.name}"
+          when :has_one     then "  has_one :#{association.name}"
+          when :belongs_to  then "  belongs_to :#{association.name}"
           end
         end.compact
       end

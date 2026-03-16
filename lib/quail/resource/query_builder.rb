@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Quail
   module Resource
     module QueryBuilder
@@ -14,7 +16,7 @@ module Quail
             type: type_class,
             null: true,
             arguments: { id: { type: GraphQL::Types::ID, required: true } },
-            resolve: ->(obj, args, ctx) { model.find_by(id: args[:id]) }
+            resolve: ->(_obj, args, _ctx) { model.find_by(id: args[:id]) }
           }
         end
 
@@ -22,7 +24,7 @@ module Quail
           fields[:"#{model_name.underscore.pluralize}"] = {
             type: type_class.connection_type,
             null: false,
-            resolve: ->(obj, args, ctx) { model.all }
+            resolve: ->(_obj, _args, _ctx) { model.all }
           }
         end
 

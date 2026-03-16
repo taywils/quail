@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Quail
   class Railtie < Rails::Railtie
     config.quail = ActiveSupport::OrderedOptions.new
@@ -10,9 +12,7 @@ module Quail
 
     config.after_initialize do |app|
       schema = app.config.quail.schema_class
-      if schema.is_a?(String)
-        app.config.quail.schema_class = schema.constantize
-      end
+      app.config.quail.schema_class = schema.constantize if schema.is_a?(String)
     end
 
     rake_tasks do

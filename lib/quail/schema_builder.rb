@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Quail
   module SchemaBuilder
     def self.call(schema_class, &block)
@@ -52,7 +54,7 @@ module Quail
       extra_query_fields = Quail.extra_queries
       return nil if fields.empty? && extra_query_fields.empty? && custom_queries.empty?
 
-      base = Quail.base_object_class || Quail::Schema::Object
+      base = Quail.base_object_class || GraphQL::Schema::Object
 
       Class.new(base) do
         graphql_name "Query"
@@ -64,10 +66,10 @@ module Quail
             f.argument arg_name, arg_config[:type], required: arg_config[:required]
           end
 
-          if config[:resolve]
-            define_method(name) do |**args|
-              config[:resolve].call(object, args, context)
-            end
+          next unless config[:resolve]
+
+          define_method(name) do |**args|
+            config[:resolve].call(object, args, context)
           end
         end
 
@@ -76,7 +78,7 @@ module Quail
         end
 
         extra_query_fields.each do |name, config|
-          f = field name,  config[:type], null: config[:null]
+          f = field name, config[:type], null: config[:null]
 
           config[:arguments]&.each do |arg_name, arg_config|
             f.argument arg_name, arg_config[:type], required: arg_config[:required]
@@ -112,7 +114,7 @@ module Quail
     def self.discover_custom_mutations
       return {} unless defined?(Rails)
 
-      mutations {}
+      mutations = {}
 
       Dir[Rails.root.join("app/graphql/mutations/**/*.rb")].each do |f|
         relative = Pathname.new(f).relative_path_from(Rails.root.join("app/graphql/mutations"))
@@ -155,9 +157,9 @@ module Quail
 
         fields.each do |name, config|
           f = field name, config[:type],
-            null: config[:null],
-            description: config[:description],
-            subscription_scope: config[:subscription_scope]
+                    null: config[:null],
+                    description: config[:description],
+                    subscription_scope: config[:subscription_scope]
 
           config[:arguments]&.each do |arg_name, arg_config|
             f.argument arg_name, arg_config[:type], required: arg_config[:required]

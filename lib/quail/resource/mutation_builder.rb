@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Quail
   module Resource
     module MutationBuilder
@@ -11,11 +13,7 @@ module Quail
         %i[create update delete].each do |action|
           next if skipped.include?(action)
 
-          if overrides[action]
-            mutations[action] = overrides[action]
-          else
-            mutations[action] = build_mutation(action, resource_class, model, type_class)
-          end
+          mutations[action] = (overrides[action] || build_mutation(action, resource_class, model, type_class))
         end
 
         mutations
@@ -30,13 +28,13 @@ module Quail
 
         case action
         when :create then build_create(base, model, model_name, type_class, writable, subscriptions)
-        when :update then build_create(base, model, model_name, type_class, writable, subscriptions)
-        when :delete then build_create(base, model, model_name, type_class, subscriptions)
+        when :update then build_update(base, model, model_name, type_class, writable, subscriptions)
+        when :delete then build_delete(base, model, model_name, type_class, subscriptions)
         end
       end
 
-      def self.default_writable
-        model.column_names.map(&:to_sym).reject { |column| %i[id created_at updated_at].include?(c) }
+      def self.default_writable(model)
+        model.column_names.map(&:to_sym).reject { |column| %i[id created_at updated_at].include?(column) }
       end
 
       def self.resolve_scope(scope_config, record)
@@ -61,7 +59,8 @@ module Quail
           writable.each do |attr|
             col = model.columns_hash[attr.to_s]
             next unless col
-            argument attr, TypeMap.graphql_type(col), required: !TypeMap.nullable?(col)
+
+            argument attr, TypeMap.graphql_types(col), required: !TypeMap.nullable?(col)
           end
 
           field model_name.underscore.to_sym, type_class, null: true
@@ -82,7 +81,7 @@ module Quail
         end
       end
 
-      def self.build_update(base, model,model_name, type_class, writable, subscriptions)
+      def self.build_update(base, model, model_name, type_class, writable, subscriptions)
         Class.new(base) do
           graphql_name "Update#{model_name}"
           description "Updates a #{model_name}"
@@ -92,7 +91,8 @@ module Quail
           writable.each do |attr|
             col = model.columns_hash[attr.to_s]
             next unless col
-            argument attr, TypeMap.graphql_type(col), required: false
+
+            argument attr, TypeMap.graphql_types(col), required: false
           end
 
           field model_name.underscore.to_sym, type_class, null: true
@@ -115,7 +115,7 @@ module Quail
         end
       end
 
-      def self.build_delete(base, model, model_name, type_class, subscriptions)
+      def self.build_delete(base, model, model_name, _type_class, subscriptions)
         Class.new(base) do
           graphql_name "Delete#{model_name}"
           description "Delete a #{model_name}"

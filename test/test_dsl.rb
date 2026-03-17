@@ -2,7 +2,7 @@
 
 require "test_helper"
 
-class TestDSL < Minitest::Test
+class TestDSL < Minitest::Test # rubocop:disable Metrics/ClassLength
   # A throwaway class that includes the DSL so we can test it in isolation.
   # No real ActiveRecord model needed.
   def build_resource_class

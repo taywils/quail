@@ -2,7 +2,7 @@
 
 require "test_helper"
 
-class TestTypeBuilder < Minitest::Test
+class TestTypeBuilder < Minitest::Test # rubocop:disable Metrics/ClassLength
   # ── Lightweight stubs ───────────────────────────────────────────────
   # Fake model classes that quack enough like ActiveRecord models for
   # TypeBuilder and the registry to work. No Rails boot needed.
@@ -21,7 +21,7 @@ class TestTypeBuilder < Minitest::Test
     end
   end
 
-  def build_fake_resource(model, assoc_defs: {}, graphql_type: nil)
+  def build_fake_resource(model, assoc_defs: {}, graphql_type: nil) # rubocop:disable Metrics/MethodLength
     gql_type = graphql_type || Class.new(GraphQL::Schema::Object) do
       graphql_name "#{model.name}Type"
     end
@@ -35,7 +35,6 @@ class TestTypeBuilder < Minitest::Test
       define_singleton_method(:association_definitions) { assoc_defs }
     end
 
-    # Register in Quail registry so resolve_type can find it
     Quail.registry[model] = resource
     resource
   end
@@ -101,7 +100,7 @@ class TestTypeBuilder < Minitest::Test
   # ── Parent type gets a nullable field of the union type ─────────────
   # Validates: Requirements 2.3
 
-  def test_add_polymorphic_field_adds_nullable_union_field
+  def test_add_polymorphic_field_adds_nullable_union_field # rubocop:disable Metrics/MethodLength
     post_model = build_fake_model("Post")
     post_resource = build_fake_resource(post_model)
 
@@ -115,9 +114,7 @@ class TestTypeBuilder < Minitest::Test
     field = parent_type.fields["commentable"]
     refute_nil field, "Expected parent type to have a :commentable field"
 
-    # The field type should be the union
     field_type = field.type
-    # Unwrap NonNull if present — polymorphic fields should be nullable
     assert !field_type.respond_to?(:of_type),
            "Polymorphic field should be nullable (not wrapped in NonNull)"
   end
@@ -163,14 +160,13 @@ class TestTypeBuilder < Minitest::Test
   # ── resolve_type raises for unregistered model ──────────────────────
   # Validates: Requirements 3.2
 
-  def test_resolve_type_raises_execution_error_for_unregistered_model
+  def test_resolve_type_raises_execution_error_for_unregistered_model # rubocop:disable Metrics/MethodLength
     post_model = build_fake_model("Post")
     post_resource = build_fake_resource(post_model)
 
     config = { polymorphic_types: [post_resource], union_name: nil }
     union = Quail::Resource::TypeBuilder.build_union_type(:commentable, config)
 
-    # Create an unregistered model
     unknown_model = build_fake_model("Unknown")
     fake_unknown = unknown_model.new
 
@@ -186,7 +182,7 @@ class TestTypeBuilder < Minitest::Test
   # ── Non-polymorphic associations still use ar_assoc.klass path ──────
   # Validates: Requirements 4.1, 4.2
 
-  def test_non_polymorphic_association_uses_existing_path
+  def test_non_polymorphic_association_uses_existing_path # rubocop:disable Metrics/MethodLength
     author_model = build_fake_model("Author", columns_hash: {})
     _author_resource = build_fake_resource(author_model)
 

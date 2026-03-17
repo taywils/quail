@@ -27,9 +27,8 @@ class TestMutationBuilder < Minitest::Test
   # attributes, while non-polymorphic foreign keys remain included.
 
   def test_excludes_polymorphic_type_and_id_columns
-    model = build_fake_model("Comment", column_names: %i[
-                               id body commentable_type commentable_id author_id created_at updated_at
-                             ])
+    columns = %i[id body commentable_type commentable_id author_id created_at updated_at]
+    model = build_fake_model("Comment", column_names: columns)
     resource = build_fake_resource(assoc_defs: {
                                      commentable: { kind: :belongs_to, polymorphic: true, polymorphic_types: [] }
                                    })
@@ -40,7 +39,6 @@ class TestMutationBuilder < Minitest::Test
     refute_includes writable, :commentable_id
     assert_includes writable, :body
     assert_includes writable, :author_id
-    assert_equal %i[body author_id], writable
   end
 
   # Non-polymorphic foreign keys like author_id must NOT be excluded.

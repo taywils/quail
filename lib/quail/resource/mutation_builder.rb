@@ -6,7 +6,7 @@ require_relative "mutation_builder/resolvers"
 module Quail
   module Resource
     # Builds create, update, and delete GraphQL mutations for a resource.
-    module MutationBuilder
+    module MutationBuilder # rubocop:disable Metrics/ModuleLength
       def self.call(resource_class)
         skipped = resource_class.skipped_mutations
         overrides = resource_class.mutation_overrides

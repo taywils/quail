@@ -100,6 +100,31 @@ end
 
 Associations resolve through the Quail resource registry. If a resource exists for the associated model, the type is wired up automatically.
 
+#### Polymorphic Associations
+
+Rails polymorphic `belongs_to` associations are supported. Since GraphQL requires a concrete type, you declare the possible resource types explicitly and Quail generates a union type:
+
+```ruby
+class CommentResource
+  include Quail::Resource
+
+  attributes :id, :body
+
+  belongs_to :commentable, polymorphic: { types: [PostResource, ImageResource] }
+end
+```
+
+This generates a `CommentableUnion` GraphQL union type that resolves to `PostType` or `ImageType` at runtime based on the record's `commentable_type` column. You can customize the union name:
+
+```ruby
+belongs_to :commentable, polymorphic: {
+  types: [PostResource, ImageResource],
+  union_name: "CommentableTarget"
+}
+```
+
+Delegated types work without any special configuration since each delegate maps to a concrete ActiveRecord class.
+
 ### Computed Attributes
 
 ```ruby
@@ -172,6 +197,103 @@ class ArticleResource
   attributes :id, :title
 
   skip_queries :list  # only expose find, not the collection
+end
+```
+
+Override a query with a custom resolver:
+
+```ruby
+class ArticleResource
+  include Quail::Resource
+
+  attributes :id, :title, :body
+
+  skip_queries :list
+end
+```
+
+```ruby
+# app/graphql/queries/search_articles.rb
+class Queries::SearchArticles < Quail::Query
+  type [:article], null: false
+
+  argument :term, String, required: true
+
+  def resolve(term:)
+    Article.where("title ILIKE ?", "%#{term}%")
+  end
+end
+```
+
+`Quail::Query` supports symbol-based type references — `:article` resolves to `ArticleResource.graphql_type` automatically. Classes in `app/graphql/queries/` that inherit from `Quail::Query` are discovered and added to the schema.
+
+### Custom Subscription Override
+
+Replace an auto-generated subscription with a hand-written one:
+
+```ruby
+class ArticleResource
+  include Quail::Resource
+
+  attributes :id, :title
+
+  # Don't declare subscribe_on — we'll wire it up manually
+end
+```
+
+```ruby
+# app/graphql/subscriptions/article_published.rb
+class Subscriptions::ArticlePublished < GraphQL::Schema::Subscription
+  field :article, ArticleResource.graphql_type, null: false
+
+  def subscribe
+    # Custom auth or filtering logic
+    raise GraphQL::ExecutionError, "Not authorized" unless context[:current_user]
+    super
+  end
+
+  def update
+    { article: object }
+  end
+end
+```
+
+Wire it into your schema manually:
+
+```ruby
+class AppSchema < GraphQL::Schema
+  Quail::SchemaBuilder.call(self) do |schema|
+    # Add custom subscription fields alongside auto-generated ones
+  end
+end
+```
+
+### Custom Channel Override
+
+Generate a customizable ActionCable channel:
+
+```bash
+rails generate quail:channel
+```
+
+This creates a channel that inherits from `Quail::Channel` where you can inject auth context:
+
+```ruby
+# app/channels/graphql_channel.rb
+class GraphqlChannel < Quail::Channel
+  private
+
+  def context_for_subscription
+    {
+      channel: self,
+      current_user: find_verified_user
+    }
+  end
+
+  def find_verified_user
+    User.find_by(id: connection.session[:user_id]) ||
+      reject_unauthorized_connection
+  end
 end
 ```
 
@@ -271,6 +393,121 @@ Rails.application.config.quail.schema_class = "AppSchema"
 # Quail.base_object_class = Types::BaseObject
 # Quail.base_mutation_class = Mutations::BaseMutation
 ```
+
+## Authentication (Rails 8)
+
+Quail follows a Bring Your Own Auth approach — it never touches authentication. Here's how to wire up the built-in Rails 8 authentication generator with Quail.
+
+Start by scaffolding Rails authentication:
+
+```bash
+bin/rails generate authentication
+bin/rails db:migrate
+```
+
+### Controller Context
+
+Pass the current user into the GraphQL context from your controller:
+
+```ruby
+# app/controllers/graphql_controller.rb
+class GraphqlController < ApplicationController
+  include Quail::ControllerHelpers
+
+  def execute
+    result = AppSchema.execute(
+      params[:query],
+      variables: normalize_request_params(params[:variables]),
+      context: {
+        current_user: Current.user
+      },
+      operation_name: params[:operationName]
+    )
+    render json: result
+  rescue StandardError => e
+    raise e unless Rails.env.development?
+    handle_error_in_development(e)
+  end
+end
+```
+
+### Using Context in Resolvers
+
+Access `context[:current_user]` in custom queries and mutations:
+
+```ruby
+# app/graphql/queries/my_articles.rb
+class Queries::MyArticles < Quail::Query
+  type [:article], null: false
+
+  def resolve
+    context[:current_user].articles
+  end
+end
+```
+
+```ruby
+# app/graphql/mutations/publish_article.rb
+class Mutations::PublishArticle < Quail::Mutation
+  argument :id, ID, required: true
+
+  field :article, ArticleResource.graphql_type, null: true
+  field :errors, [String], null: false
+
+  def resolve(id:)
+    article = context[:current_user].articles.find(id)
+    article.update!(published_at: Time.current)
+    { article: article, errors: [] }
+  rescue ActiveRecord::RecordNotFound
+    { article: nil, errors: ["Article not found"] }
+  end
+end
+```
+
+### ActionCable Authentication
+
+Authenticate WebSocket connections for subscriptions using the session cookie:
+
+```ruby
+# app/channels/application_cable/connection.rb
+module ApplicationCable
+  class Connection < ActionCable::Connection::Base
+    identified_by :current_user
+
+    def connect
+      self.current_user = find_verified_user
+    end
+
+    private
+
+    def find_verified_user
+      session = request.session
+      user = User.find_by(id: session[:user_id])
+      user || reject_unauthorized_connection
+    end
+  end
+end
+```
+
+Then pass the authenticated user through in your GraphQL channel:
+
+```ruby
+# app/channels/graphql_channel.rb
+class GraphqlChannel < Quail::Channel
+  private
+
+  def context_for_subscription
+    {
+      channel: self,
+      current_user: connection.current_user
+    }
+  end
+end
+```
+
+Generate the custom channel with `rails generate quail:channel` if you haven't already.
+
+This pattern works with the default Rails 8 session-based auth. If you use Devise, JWT, or another auth library, adapt the wiring to match — the context plumbing is the same.
 
 ## Rake Tasks
 

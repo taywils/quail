@@ -6,6 +6,7 @@ Quail exists because working with GraphQL in Rails shouldn't feel like leaving R
 
 - Convention over configuration. Define a resource, get types, queries, mutations, and subscriptions generated for you.
 - Bring Your Own Auth. Quail never touches authentication. Plug in Devise, JWT, or whatever you use.
+- Real-time via ActionCable. Subscriptions are powered by ActionCable out of the box — declare `subscribe_on` in a resource and Quail wires up the GraphQL subscription fields, triggers, and the ActionCable channel automatically.
 - A Rails-style wrapper DSL for graphql-ruby. Generators, rake tasks, and patterns that feel familiar.
 - Alba-style separate resources via `include Quail::Resource`. Your ActiveRecord models stay clean. Your GraphQL layer lives in its own space.
 

@@ -44,6 +44,12 @@ module Quail
         end
 
         def belongs_to(name, resource: nil, **options)
+          if options[:polymorphic]
+            validate_polymorphic_options!(options[:polymorphic])
+            options[:polymorphic_types] = options[:polymorphic][:types]
+            options[:union_name] = options[:polymorphic][:union_name] if options[:polymorphic][:union_name]
+            options[:polymorphic] = true
+          end
           association_definitions[name] = { kind: :belongs_to, resource: resource, **options }
         end
 
@@ -89,6 +95,18 @@ module Quail
 
         def skipped_queries
           @skipped_queries || []
+        end
+
+        private
+
+        def validate_polymorphic_options!(poly_opt)
+          unless poly_opt.is_a?(Hash) && poly_opt.key?(:types)
+            raise ArgumentError,
+                  "polymorphic requires a Hash with a :types key, e.g. polymorphic: { types: [FooResource] }"
+          end
+          return unless poly_opt[:types].empty?
+
+          raise ArgumentError, "polymorphic :types must contain at least one resource class"
         end
       end
     end

@@ -145,4 +145,75 @@ class TestDSL < Minitest::Test
     klass = build_resource_class
     assert_empty klass.skipped_queries
   end
+
+  # ── polymorphic belongs_to ──────────────────────────────────────────
+
+  # Property 1: Polymorphic DSL storage
+  # Validates: Requirements 1.1
+  def test_polymorphic_belongs_to_stores_correct_definition_shape
+    fake_resource_a = Class.new
+    fake_resource_b = Class.new
+
+    klass = build_resource_class
+    klass.belongs_to :commentable, polymorphic: { types: [fake_resource_a, fake_resource_b] }
+
+    defn = klass.association_definitions[:commentable]
+    assert_equal :belongs_to, defn[:kind]
+    assert_equal true, defn[:polymorphic]
+    assert_equal [fake_resource_a, fake_resource_b], defn[:polymorphic_types]
+  end
+
+  # Validates: Requirements 1.3
+  def test_polymorphic_bare_boolean_raises_argument_error
+    klass = build_resource_class
+
+    assert_raises(ArgumentError) do
+      klass.belongs_to :commentable, polymorphic: true
+    end
+  end
+
+  # Validates: Requirements 1.2
+  def test_polymorphic_empty_types_raises_argument_error
+    klass = build_resource_class
+
+    assert_raises(ArgumentError) do
+      klass.belongs_to :commentable, polymorphic: { types: [] }
+    end
+  end
+
+  # Property 2: Non-polymorphic backward compatibility
+  # Validates: Requirements 1.4
+  def test_non_polymorphic_belongs_to_unchanged
+    klass = build_resource_class
+    klass.belongs_to :author, resource: :user_resource
+
+    defn = klass.association_definitions[:author]
+    assert_equal :belongs_to, defn[:kind]
+    assert_equal :user_resource, defn[:resource]
+    refute defn.key?(:polymorphic_types), "non-polymorphic belongs_to should not have :polymorphic_types"
+    refute defn[:polymorphic], "non-polymorphic belongs_to should not have polymorphic set to true"
+  end
+
+  # Property 7: Custom union_name override
+  # Validates: Requirements 7.2
+  def test_polymorphic_union_name_stored_when_provided
+    fake_resource = Class.new
+
+    klass = build_resource_class
+    klass.belongs_to :commentable, polymorphic: { types: [fake_resource], union_name: "MediaUnion" }
+
+    defn = klass.association_definitions[:commentable]
+    assert_equal "MediaUnion", defn[:union_name]
+  end
+
+  # Validates: Requirements 7.2 (absence case)
+  def test_polymorphic_without_union_name_does_not_store_key
+    fake_resource = Class.new
+
+    klass = build_resource_class
+    klass.belongs_to :commentable, polymorphic: { types: [fake_resource] }
+
+    defn = klass.association_definitions[:commentable]
+    refute defn.key?(:union_name), "union_name should not be present when not provided"
+  end
 end

@@ -62,6 +62,11 @@ module Quail
       end
 
       def self.add_single_association(type_class, model, name, config)
+        if config[:polymorphic]
+          add_polymorphic_field(type_class, name, config)
+          return
+        end
+
         ar_assoc = model.reflect_on_association(name)
         return unless ar_assoc
 
@@ -69,6 +74,34 @@ module Quail
         return unless assoc_type
 
         add_association_field(type_class, name, config[:kind], assoc_type, ar_assoc)
+      end
+
+      def self.add_polymorphic_field(type_class, name, config)
+        union_type = build_union_type(name, config)
+        type_class.field name, union_type, null: true
+      end
+
+      def self.build_union_type(name, config)
+        resource_classes = config[:polymorphic_types]
+        gql_name = config[:union_name] || "#{name.to_s.camelize}Union"
+        assoc_name = name
+
+        Class.new(GraphQL::Schema::Union) do
+          graphql_name gql_name
+          description "Union type for polymorphic association #{assoc_name}"
+
+          possible_types(*resource_classes.map(&:graphql_type))
+
+          define_method(:resolve_type) do |obj, _ctx|
+            type_value = obj.class.name
+            resource = Quail.resource_for(obj.class)
+            unless resource
+              raise GraphQL::ExecutionError,
+                    "Cannot resolve polymorphic type '#{type_value}' for association :#{assoc_name} — no resource registered"
+            end
+            resource.graphql_type
+          end
+        end
       end
 
       def self.add_association_field(type_class, name, kind, assoc_type, ar_assoc)

@@ -29,8 +29,22 @@ module Quail
         end
       end
 
-      def self.default_writable(model)
-        model.column_names.map(&:to_sym).reject { |c| %i[id created_at updated_at].include?(c) }
+      def self.default_writable(model, resource_class = nil)
+        excluded = %i[id created_at updated_at]
+        excluded += polymorphic_columns(resource_class) if resource_class
+        model.column_names.map(&:to_sym).reject { |c| excluded.include?(c) }
+      end
+
+      def self.polymorphic_columns(resource_class)
+        return [] unless resource_class
+
+        resource_class.association_definitions
+                      .select { |_, config| config[:polymorphic] }
+                      .flat_map do |name, _|
+          [
+            :"#{name}_type", :"#{name}_id"
+          ]
+        end
       end
 
       def self.resolve_scope(scope_config, record)

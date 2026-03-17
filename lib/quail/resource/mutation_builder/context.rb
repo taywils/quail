@@ -8,7 +8,12 @@ module Quail
         def model          = resource_class.model_class
         def type_class     = resource_class.graphql_type
         def underscore_name = model.name.underscore
-        def writable       = resource_class.writable_attributes || MutationBuilder.default_writable(model)
+
+        def writable
+          resource_class.writable_attributes || MutationBuilder.default_writable(model,
+                                                                                 resource_class)
+        end
+
         def subscriptions  = resource_class.subscription_definitions
         def base           = Quail.base_mutation_class || GraphQL::Schema::RelayClassicMutation
       end

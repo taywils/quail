@@ -38,6 +38,7 @@ This creates:
 - `app/graphql/resources/` — where your resource files live
 - `app/graphql/mutations/` — for custom mutation classes
 - `app/graphql/queries/` — for custom query resolvers
+- `app/graphql/subscriptions/` — for custom subscription classes
 - `app/graphql/types/` — for custom GraphQL types
 - `app/controllers/graphql_controller.rb` — a ready-to-go controller
 - `app/channels/graphql_channel.rb` — ActionCable channel for subscriptions
@@ -227,7 +228,7 @@ end
 
 `Quail::Query` supports symbol-based type references — `:article` resolves to `ArticleResource.graphql_type` automatically. Classes in `app/graphql/queries/` that inherit from `Quail::Query` are discovered and added to the schema.
 
-> **Autoloading note:** The Quail railtie registers `app/graphql/resources/`, `app/graphql/queries/`, and `app/graphql/mutations/` as Zeitwerk autoload roots. This means classes in those directories must be top-level — do not wrap them in a `Queries::`, `Mutations::`, or `Resources::` module. For example, `app/graphql/queries/search_articles.rb` should define `SearchArticles`, not `Queries::SearchArticles`. The `app/graphql/types/` directory is excluded from this and retains the `Types::` namespace as usual.
+> **Autoloading note:** The Quail railtie registers `app/graphql/resources/`, `app/graphql/queries/`, `app/graphql/mutations/`, and `app/graphql/subscriptions/` as Zeitwerk autoload roots. This means classes in those directories must be top-level — do not wrap them in a `Queries::`, `Mutations::`, `Subscriptions::`, or `Resources::` module. For example, `app/graphql/queries/search_articles.rb` should define `SearchArticles`, not `Queries::SearchArticles`. The `app/graphql/types/` directory is excluded from this and retains the `Types::` namespace as usual.
 
 ### Custom Subscription Override
 
@@ -245,7 +246,7 @@ end
 
 ```ruby
 # app/graphql/subscriptions/article_published.rb
-class Subscriptions::ArticlePublished < GraphQL::Schema::Subscription
+class ArticlePublished < GraphQL::Schema::Subscription
   field :article, ArticleResource.graphql_type, null: false
 
   def subscribe

@@ -9,7 +9,7 @@ module Quail
     initializer "quail.autoload_paths", before: :set_autoload_paths do |app|
       # These subdirectories define top-level constants (e.g. UserResource, not Resources::UserResource)
       # Note: types/ is excluded because custom types use the Types:: namespace by convention
-      %w[resources queries mutations].each do |subdir|
+      %w[resources queries mutations subscriptions].each do |subdir|
         path = Rails.root.join("app/graphql/#{subdir}").to_s
         next unless Dir.exist?(path)
 

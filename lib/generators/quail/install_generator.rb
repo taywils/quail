@@ -25,7 +25,7 @@ module Quail
                    desc: "Skip generating the ActionCable channel"
 
       def create_graphql_directories
-        %w[resources mutations queries types].each do |dir|
+        %w[resources mutations queries subscriptions types].each do |dir|
           empty_directory "app/graphql/#{dir}"
           create_file "app/graphql/#{dir}/.keep"
         end

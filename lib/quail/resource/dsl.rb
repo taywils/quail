@@ -106,7 +106,7 @@ module Quail
           end
           return unless poly_opt[:types].empty?
 
-          raise ArgumentError, "polymorphic :types must contain at least one resource class"
+          raise ArgumentError, "polymorphic :types must contain at least one resource class or class name string"
         end
       end
     end

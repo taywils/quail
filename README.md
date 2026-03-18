@@ -162,13 +162,13 @@ class ArticleResource
 
   attributes :id, :title, :body
 
-  override_mutation :create, Mutations::CreateArticle
+  override_mutation :create, CreateArticle
 end
 ```
 
 ```ruby
 # app/graphql/mutations/create_article.rb
-class Mutations::CreateArticle < Quail::Mutation
+class CreateArticle < Quail::Mutation
   graphql_name "CreateArticle"
 
   argument :title, String, required: true
@@ -214,7 +214,7 @@ end
 
 ```ruby
 # app/graphql/queries/search_articles.rb
-class Queries::SearchArticles < Quail::Query
+class SearchArticles < Quail::Query
   type [:article], null: false
 
   argument :term, String, required: true
@@ -226,6 +226,8 @@ end
 ```
 
 `Quail::Query` supports symbol-based type references — `:article` resolves to `ArticleResource.graphql_type` automatically. Classes in `app/graphql/queries/` that inherit from `Quail::Query` are discovered and added to the schema.
+
+> **Autoloading note:** The Quail railtie registers `app/graphql/resources/`, `app/graphql/queries/`, and `app/graphql/mutations/` as Zeitwerk autoload roots. This means classes in those directories must be top-level — do not wrap them in a `Queries::`, `Mutations::`, or `Resources::` module. For example, `app/graphql/queries/search_articles.rb` should define `SearchArticles`, not `Queries::SearchArticles`. The `app/graphql/types/` directory is excluded from this and retains the `Types::` namespace as usual.
 
 ### Custom Subscription Override
 
@@ -437,7 +439,7 @@ Access `context[:current_user]` in custom queries and mutations:
 
 ```ruby
 # app/graphql/queries/my_articles.rb
-class Queries::MyArticles < Quail::Query
+class MyArticles < Quail::Query
   type [:article], null: false
 
   def resolve
@@ -448,7 +450,7 @@ end
 
 ```ruby
 # app/graphql/mutations/publish_article.rb
-class Mutations::PublishArticle < Quail::Mutation
+class PublishArticle < Quail::Mutation
   argument :id, ID, required: true
 
   field :article, ArticleResource.graphql_type, null: true

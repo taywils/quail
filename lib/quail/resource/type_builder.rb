@@ -1,131 +1,49 @@
 # frozen_string_literal: true
 
+require_relative "type_builder/field_builder"
+require_relative "type_builder/association_builder"
+
 module Quail
   module Resource
     # Generates GraphQL object types from resource attribute and association definitions.
     module TypeBuilder
       def self.build_all
-        # Two-pass build: first create all scalar types so every resource has a
-        # graphql_type, then wire up associations (which may reference other resources).
-        Quail.registry.each_value { |rc| build_scalar_fields(rc) }
-        Quail.registry.each_value { |rc| add_association_fields(rc) }
+        Quail.registry.each_value do |rc|
+          build_scalar_fields(rc)
+          AssociationBuilder.add_fields(rc)
+        end
       end
 
       def self.build_scalar_fields(resource_class)
         model = resource_class.model_class
         attrs = resource_class.attribute_definitions
-        base = Quail.base_object_class || GraphQL::Schema::Object
+        type_class = create_type_class(model)
 
-        type_class = Class.new(base) do
+        FieldBuilder.define_column_fields(type_class, model, attrs)
+        FieldBuilder.define_computed_fields(type_class, attrs)
+        resource_class.instance_variable_set(:@graphql_type, type_class)
+        register_type_constant(model, type_class)
+      end
+
+      def self.create_type_class(model)
+        base = Quail.base_object_class || GraphQL::Schema::Object
+        Class.new(base) do
           graphql_name "#{model.name}Type"
           description "Auto-generated type for #{model.name}"
         end
+      end
 
-        define_column_fields(type_class, model, attrs)
-        define_computed_fields(type_class, attrs)
-        resource_class.instance_variable_set(:@graphql_type, type_class)
-
-        # Register as a top-level constant so string type references (e.g. 'QuestionnaireType')
-        # can be resolved by graphql-ruby's constantize.
+      def self.register_type_constant(model, type_class)
         const_name = "#{model.name}Type"
         Object.const_set(const_name, type_class) unless Object.const_defined?(const_name)
-      end
-
-      def self.define_column_fields(type_class, model, attrs)
-        attrs.each do |name, config|
-          next unless config[:type] == :column
-
-          col = model.columns_hash[name.to_s]
-          if col
-            type_class.field name, TypeMap.graphql_types(col), null: TypeMap.nullable?(col)
-          else
-            type_class.field name, GraphQL::Types::String, null: true
-          end
-        end
-      end
-
-      def self.define_computed_fields(type_class, attrs)
-        attrs.each do |name, config|
-          next unless config[:type] == :computed
-
-          gql_type = config[:graphql_type] || GraphQL::Types::String
-          nullable = config[:null].nil? || config[:null]
-          blk = config[:block]
-          type_class.field name, gql_type, null: nullable
-          if blk.arity.abs >= 3
-            type_class.define_method(name) { blk.call(object, nil, context) }
-          else
-            type_class.define_method(name) { blk.call(object) }
-          end
-        end
-      end
-
-      def self.add_association_fields(resource_class)
-        model = resource_class.model_class
-        type_class = resource_class.graphql_type
-        assocs = resource_class.association_definitions
-
-        assocs.each do |name, config|
-          add_single_association(type_class, model, name, config)
-        end
-      end
-
-      def self.add_single_association(type_class, model, name, config)
-        if config[:polymorphic]
-          add_polymorphic_field(type_class, name, config)
-          return
-        end
-
-        # Support explicit resource: option (string or class) for associations
-        # where the AR association class name differs from the resource name
-        if config[:resource]
-          resource_class = resolve_resource_ref(config[:resource])
-          assoc_type = resource_class&.graphql_type
-          if assoc_type
-            ar_assoc = model.reflect_on_association(name)
-            add_association_field(type_class, name, config[:kind], assoc_type, ar_assoc)
-          end
-          return
-        end
-
-        ar_assoc = model.reflect_on_association(name)
-        return unless ar_assoc
-
-        assoc_type = Quail.resource_for(ar_assoc.klass)&.graphql_type
-        return unless assoc_type
-
-        add_association_field(type_class, name, config[:kind], assoc_type, ar_assoc)
-      end
-
-      def self.add_polymorphic_field(type_class, name, config)
-        union_type = build_union_type(name, config)
-        type_class.field name, union_type, null: true
-      end
-
-      def self.build_union_type(name, config)
-        gql_name = config[:union_name] || "#{name.to_s.camelize}Union"
-        resolved_types = config[:polymorphic_types].map do |t|
-          resolve_resource_ref(t).graphql_type
-        end
-        assoc_name = name
-
-        Class.new(GraphQL::Schema::Union) do
-          graphql_name gql_name
-          description "Union type for polymorphic association #{assoc_name}"
-          possible_types(*resolved_types)
-          define_method(:resolve_type) { |obj, _ctx| TypeBuilder.resolve_polymorphic_type(obj, assoc_name) }
-        end
       end
 
       # Resolve a resource reference that can be a Class or a String class name.
       def self.resolve_resource_ref(ref)
         case ref
-        when Class
-          ref
-        when String
-          ref.constantize
-        else
-          raise ArgumentError, "Expected a resource class or string class name, got #{ref.inspect}"
+        when Class  then ref
+        when String then ref.constantize
+        else raise ArgumentError, "Expected a resource class or string class name, got #{ref.inspect}"
         end
       end
 
@@ -139,19 +57,11 @@ module Quail
         resource.graphql_type
       end
 
-      def self.add_association_field(type_class, name, kind, assoc_type, ar_assoc)
-        case kind
-        when :has_many
-          type_class.field name, [assoc_type], null: false
-        when :has_one, :belongs_to
-          nullable = if kind == :belongs_to
-                       ar_assoc ? ar_assoc.options[:optional] != false : true
-                     else
-                       true
-                     end
-          type_class.field name, assoc_type, null: nullable
-        end
-      end
+      # Delegate public API so existing callers (and tests) still work.
+      def self.add_association_fields(resource_class) = AssociationBuilder.add_fields(resource_class)
+      def self.add_single_association(...) = AssociationBuilder.add_single(...)
+      def self.add_polymorphic_field(...) = AssociationBuilder.add_polymorphic_field(...)
+      def self.build_union_type(...) = AssociationBuilder.build_union_type(...)
     end
   end
 end

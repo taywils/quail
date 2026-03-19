@@ -24,6 +24,11 @@ module Quail
         define_column_fields(type_class, model, attrs)
         define_computed_fields(type_class, attrs)
         resource_class.instance_variable_set(:@graphql_type, type_class)
+
+        # Register as a top-level constant so string type references (e.g. 'QuestionnaireType')
+        # can be resolved by graphql-ruby's constantize.
+        const_name = "#{model.name}Type"
+        Object.const_set(const_name, type_class) unless Object.const_defined?(const_name)
       end
 
       def self.define_column_fields(type_class, model, attrs)
@@ -47,7 +52,11 @@ module Quail
           nullable = config[:null].nil? || config[:null]
           blk = config[:block]
           type_class.field name, gql_type, null: nullable
-          type_class.define_method(name) { blk.call(object) }
+          if blk.arity.abs >= 3
+            type_class.define_method(name) { blk.call(object, nil, context) }
+          else
+            type_class.define_method(name) { blk.call(object) }
+          end
         end
       end
 
@@ -135,7 +144,11 @@ module Quail
         when :has_many
           type_class.field name, [assoc_type], null: false
         when :has_one, :belongs_to
-          nullable = kind == :belongs_to ? (ar_assoc ? ar_assoc.options[:optional] != false : true) : true
+          nullable = if kind == :belongs_to
+                       ar_assoc ? ar_assoc.options[:optional] != false : true
+                     else
+                       true
+                     end
           type_class.field name, assoc_type, null: nullable
         end
       end

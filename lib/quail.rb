@@ -20,6 +20,8 @@ require_relative "quail/railtie"
 module Quail
   class Error < StandardError; end
 
+  # TODO: Add more alias to better encapsulate the underlying GraphQL
+  # TODO: Move these into a concern/mixin
   Mutation = GraphQL::Schema::RelayClassicMutation
   Object = GraphQL::Schema::Object
 
@@ -37,7 +39,7 @@ module Quail
         super(-> { resolve_resource_type(resource_name) }, **)
       elsif type_arg.is_a?(Array) && type_arg.length == 1 && type_arg.first.is_a?(Symbol)
         resource_name = type_arg.first
-        super(-> { [resolve_resource_typ(resource_name)] }, **)
+        super(-> { [resolve_resource_type(resource_name)] }, **)
       else
         super
       end

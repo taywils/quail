@@ -22,15 +22,20 @@ module Quail
     end
 
     def self.configure!(schema_class)
-      eager_load_graphql_files if defined?(Rails)
+      eager_load_resources if defined?(Rails)
       Resource::TypeBuilder.build_all
+      eager_load_resolvers if defined?(Rails)
       attach_root_types(schema_class)
       install_defaults(schema_class)
       schema_class.instance_variable_set(:@quail_configured, true)
     end
 
-    def self.eager_load_graphql_files
-      %w[resources mutations queries].each do |dir|
+    def self.eager_load_resources
+      Dir[Rails.root.join("app/graphql/resources/**/*.rb")].each { |f| require f }
+    end
+
+    def self.eager_load_resolvers
+      %w[mutations queries].each do |dir|
         Dir[Rails.root.join("app/graphql/#{dir}/**/*.rb")].each { |f| require f }
       end
     end

@@ -51,7 +51,19 @@ module Quail
 
         def self.build_union_type(name, config)
           gql_name = config[:union_name] || "#{name.to_s.camelize}Union"
-          resolved_types = config[:polymorphic_types].map do |t|
+          resolved_types = resolve_polymorphic_types(config[:polymorphic_types])
+          assoc_name = name
+
+          Class.new(GraphQL::Schema::Union) do
+            graphql_name gql_name
+            description "Union type for polymorphic association #{assoc_name}"
+            possible_types(*resolved_types)
+            define_method(:resolve_type) { |obj, _ctx| TypeBuilder.resolve_polymorphic_type(obj, assoc_name) }
+          end
+        end
+
+        def self.resolve_polymorphic_types(types)
+          types.map do |t|
             resource = TypeBuilder.resolve_resource_ref(t)
             gql_type = resource.graphql_type
             unless gql_type
@@ -60,14 +72,6 @@ module Quail
                     "Ensure the resource is registered before building associations."
             end
             gql_type
-          end
-          assoc_name = name
-
-          Class.new(GraphQL::Schema::Union) do
-            graphql_name gql_name
-            description "Union type for polymorphic association #{assoc_name}"
-            possible_types(*resolved_types)
-            define_method(:resolve_type) { |obj, _ctx| TypeBuilder.resolve_polymorphic_type(obj, assoc_name) }
           end
         end
 

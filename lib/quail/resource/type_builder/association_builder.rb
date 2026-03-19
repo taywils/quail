@@ -51,7 +51,16 @@ module Quail
 
         def self.build_union_type(name, config)
           gql_name = config[:union_name] || "#{name.to_s.camelize}Union"
-          resolved_types = config[:polymorphic_types].map { |t| TypeBuilder.resolve_resource_ref(t).graphql_type }
+          resolved_types = config[:polymorphic_types].map do |t|
+            resource = TypeBuilder.resolve_resource_ref(t)
+            gql_type = resource.graphql_type
+            unless gql_type
+              raise ArgumentError,
+                    "Polymorphic type #{t.inspect} resolved to #{resource.name} but its graphql_type is nil. " \
+                    "Ensure the resource is registered before building associations."
+            end
+            gql_type
+          end
           assoc_name = name
 
           Class.new(GraphQL::Schema::Union) do

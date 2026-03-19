@@ -8,10 +8,11 @@ module Quail
     # Generates GraphQL object types from resource attribute and association definitions.
     module TypeBuilder
       def self.build_all
-        Quail.registry.each_value do |rc|
-          build_scalar_fields(rc)
-          AssociationBuilder.add_fields(rc)
-        end
+        # Two-pass build: first create all GraphQL types so that @graphql_type
+        # is available on every resource, then wire up associations (which may
+        # reference other resources' types, e.g. polymorphic unions).
+        Quail.registry.each_value { |rc| build_scalar_fields(rc) }
+        Quail.registry.each_value { |rc| AssociationBuilder.add_fields(rc) } # rubocop:disable Style/CombinableLoops
       end
 
       def self.build_scalar_fields(resource_class)

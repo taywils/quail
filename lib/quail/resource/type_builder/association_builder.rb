@@ -11,6 +11,8 @@ module Quail
           type_class = resource_class.graphql_type
 
           resource_class.association_definitions.each do |name, config|
+            next if type_class.own_fields.key?(name.to_s)
+
             add_single(type_class, model, name, config)
           end
         end

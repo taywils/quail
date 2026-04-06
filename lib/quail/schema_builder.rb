@@ -6,6 +6,8 @@ require_relative "schema_builder/type_definitions"
 module Quail
   # Assembles the full GraphQL schema from registered resources, custom queries, and mutations.
   module SchemaBuilder
+    @configure_mutex = Mutex.new
+
     def self.call(schema_class, &block)
       schema_class.instance_variable_set(:@quail_configured, false)
       install_lazy_hooks(schema_class)
@@ -22,12 +24,16 @@ module Quail
     end
 
     def self.configure!(schema_class)
-      eager_load_resources if defined?(Rails)
-      Resource::TypeBuilder.build_all
-      eager_load_resolvers if defined?(Rails)
-      attach_root_types(schema_class)
-      install_defaults(schema_class)
-      schema_class.instance_variable_set(:@quail_configured, true)
+      @configure_mutex.synchronize do
+        return if schema_class.instance_variable_get(:@quail_configured)
+
+        eager_load_resources if defined?(Rails)
+        Resource::TypeBuilder.build_all
+        eager_load_resolvers if defined?(Rails)
+        attach_root_types(schema_class)
+        install_defaults(schema_class)
+        schema_class.instance_variable_set(:@quail_configured, true)
+      end
     end
 
     def self.eager_load_resources

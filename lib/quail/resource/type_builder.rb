@@ -11,7 +11,7 @@ module Quail
         # Two-pass build: first create all GraphQL types so that @graphql_type
         # is available on every resource, then wire up associations (which may
         # reference other resources' types, e.g. polymorphic unions).
-        Quail.registry.each_value { |rc| build_scalar_fields(rc) }
+        Quail.registry.each_value { |rc| build_scalar_fields(rc) unless rc.graphql_type }
         Quail.registry.each_value { |rc| AssociationBuilder.add_fields(rc) } # rubocop:disable Style/CombinableLoops
       end
 

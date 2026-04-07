@@ -22,6 +22,7 @@ module Quail
 
   # Wrapper aliases — insulate consuming apps from graphql-ruby internals.
   Object = GraphQL::Schema::Object
+  InputObject = GraphQL::Schema::InputObject
   Enum = GraphQL::Schema::Enum
 
   # Base mutation class with subscription trigger helper.

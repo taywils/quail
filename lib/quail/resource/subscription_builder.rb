@@ -14,24 +14,28 @@ module Quail
 
         subs.each do |event, config|
           field_name = :"#{model_name.underscore}_#{event}d"
-          fields[field_name] = build_field_config(type_class, model_name, event, config)
+          fields[field_name] = build_subscription_class(type_class, model_name, event, config)
         end
 
         fields
       end
 
-      def self.build_field_config(type_class, model_name, event, config)
-        field_config = { type: type_class, null: false, description: "Triggered when a #{model_name} is #{event}d" }
-        apply_scope(field_config, config[:scope])
-        field_config
+      def self.build_subscription_class(type_class, model_name, event, config)
+        sub_class = Class.new(GraphQL::Schema::Subscription) do
+          graphql_name "#{model_name}#{event.to_s.capitalize}d"
+          description "Triggered when a #{model_name} is #{event}d"
+          payload_type type_class
+        end
+
+        apply_scope(sub_class, config[:scope])
+        sub_class
       end
 
-      def self.apply_scope(field_config, scope)
+      def self.apply_scope(sub_class, scope)
         return unless scope
 
         scope_key = scope.is_a?(Hash) ? scope.keys.first.to_sym : scope.to_sym
-        field_config[:subscription_scope] = scope_key
-        field_config[:arguments] = { scope_key => { type: GraphQL::Types::ID, required: true } }
+        sub_class.argument scope_key, GraphQL::Types::ID, required: true
       end
     end
   end

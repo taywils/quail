@@ -29,12 +29,8 @@ module Quail
       end
 
       def self.define_subscription_fields(type_class, fields)
-        fields.each do |name, config|
-          f = type_class.field name, config[:type],
-                               null: config[:null],
-                               description: config[:description],
-                               subscription_scope: config[:subscription_scope]
-          add_arguments(f, config[:arguments])
+        fields.each do |name, sub_class|
+          type_class.field name, subscription: sub_class
         end
       end
 

@@ -20,10 +20,21 @@ require_relative "quail/railtie"
 module Quail
   class Error < StandardError; end
 
-  # TODO: Add more alias to better encapsulate the underlying GraphQL
-  # TODO: Move these into a concern/mixin
-  Mutation = GraphQL::Schema::RelayClassicMutation
+  # Wrapper aliases — insulate consuming apps from graphql-ruby internals.
   Object = GraphQL::Schema::Object
+  Enum = GraphQL::Schema::Enum
+
+  # Base mutation class with subscription trigger helper.
+  class Mutation < GraphQL::Schema::RelayClassicMutation
+    # Trigger a Quail subscription event from a custom mutation.
+    #
+    #   trigger_subscription(:link_created, { user_id: user.id }, link)
+    #
+    # The arguments must match the subscription's scope declared via subscribe_on.
+    def trigger_subscription(event, scope_args, record)
+      context.schema.subscriptions&.trigger(event, scope_args, record)
+    end
+  end
 
   # Base resolver class for custom Quail queries with symbol-based type resolution.
   class Query < GraphQL::Schema::Resolver

@@ -19,3 +19,7 @@ Style/ArgumentsForwarding:
 
 Style/ParallelAssignment:
   Enabled: false
+
+Metrics:
+  Exclude:
+    - "test/**/*"

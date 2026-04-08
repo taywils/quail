@@ -60,13 +60,13 @@ class TestSchemaBuilder < Minitest::Test
     Quail::Resource::TypeBuilder.build_all
 
     user_type = user_resource.graphql_type
-    profile_fields = user_type.own_fields.select { |name, _| name == "profile" }
+    profile_fields = user_type.own_fields.slice("profile")
     assert_equal 1, profile_fields.size, "Expected one 'profile' field after first build_all"
 
     # Second call should be idempotent
     Quail::Resource::TypeBuilder.build_all
 
-    profile_fields = user_type.own_fields.select { |name, _| name == "profile" }
+    profile_fields = user_type.own_fields.slice("profile")
     assert_equal 1, profile_fields.size, "Expected one 'profile' field after second build_all"
   end
 
@@ -91,7 +91,7 @@ class TestSchemaBuilder < Minitest::Test
     Quail::Resource::TypeBuilder.build_all
 
     user_type = user_resource.graphql_type
-    posts_fields = user_type.own_fields.select { |name, _| name == "posts" }
+    posts_fields = user_type.own_fields.slice("posts")
     assert_equal 1, posts_fields.size, "Expected one 'posts' field after repeated build_all"
   end
 

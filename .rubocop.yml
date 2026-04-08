@@ -20,6 +20,10 @@ Style/ArgumentsForwarding:
 Style/ParallelAssignment:
   Enabled: false
 
+Style/Documentation:
+  Exclude:
+    - "test/**/*"
+
 Metrics:
   Exclude:
     - "test/**/*"

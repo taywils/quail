@@ -2,7 +2,7 @@
 
 require "test_helper"
 
-class TestTypeBuilder < Minitest::Test # rubocop:disable Metrics/ClassLength
+class TestTypeBuilder < Minitest::Test
   # ── Lightweight stubs ───────────────────────────────────────────────
   # Fake model classes that quack enough like ActiveRecord models for
   # TypeBuilder and the registry to work. No Rails boot needed.
@@ -21,7 +21,7 @@ class TestTypeBuilder < Minitest::Test # rubocop:disable Metrics/ClassLength
     end
   end
 
-  def build_fake_resource(model, assoc_defs: {}, graphql_type: nil) # rubocop:disable Metrics/MethodLength
+  def build_fake_resource(model, assoc_defs: {}, graphql_type: nil)
     gql_type = graphql_type || Class.new(GraphQL::Schema::Object) do
       graphql_name "#{model.name}Type"
     end
@@ -43,8 +43,7 @@ class TestTypeBuilder < Minitest::Test # rubocop:disable Metrics/ClassLength
     Struct.new(:klass, :options).new(klass, {})
   end
 
-  # ── Property 3: Union naming convention ─────────────────────────────
-  # Validates: Requirements 2.1, 6.3, 7.1
+  # ── Union naming convention ─────────────────────────────
 
   def test_union_type_graphql_name_follows_convention
     model = build_fake_model("Post")
@@ -66,8 +65,7 @@ class TestTypeBuilder < Minitest::Test # rubocop:disable Metrics/ClassLength
     assert_equal "TaggableItemUnion", union.graphql_name
   end
 
-  # ── Property 7: Custom union_name override ──────────────────────────
-  # Validates: Requirements 7.2
+  # ── Custom union_name override ──────────────────────────
 
   def test_custom_union_name_overrides_convention
     model = build_fake_model("Post")
@@ -79,8 +77,7 @@ class TestTypeBuilder < Minitest::Test # rubocop:disable Metrics/ClassLength
     assert_equal "MediaUnion", union.graphql_name
   end
 
-  # ── Property 4: Union possible_types matches declared types ─────────
-  # Validates: Requirements 2.2, 2.3
+  # ── Union possible_types matches declared types ─────────
 
   def test_possible_types_contains_correct_graphql_types
     post_model = build_fake_model("Post")
@@ -98,9 +95,8 @@ class TestTypeBuilder < Minitest::Test # rubocop:disable Metrics/ClassLength
   end
 
   # ── Parent type gets a nullable field of the union type ─────────────
-  # Validates: Requirements 2.3
 
-  def test_add_polymorphic_field_adds_nullable_union_field # rubocop:disable Metrics/MethodLength
+  def test_add_polymorphic_field_adds_nullable_union_field
     post_model = build_fake_model("Post")
     post_resource = build_fake_resource(post_model)
 
@@ -158,9 +154,8 @@ class TestTypeBuilder < Minitest::Test # rubocop:disable Metrics/ClassLength
   end
 
   # ── resolve_type raises for unregistered model ──────────────────────
-  # Validates: Requirements 3.2
 
-  def test_resolve_type_raises_execution_error_for_unregistered_model # rubocop:disable Metrics/MethodLength
+  def test_resolve_type_raises_execution_error_for_unregistered_model
     post_model = build_fake_model("Post")
     post_resource = build_fake_resource(post_model)
 
@@ -180,9 +175,8 @@ class TestTypeBuilder < Minitest::Test # rubocop:disable Metrics/ClassLength
   end
 
   # ── Non-polymorphic associations still use ar_assoc.klass path ──────
-  # Validates: Requirements 4.1, 4.2
 
-  def test_non_polymorphic_association_uses_existing_path # rubocop:disable Metrics/MethodLength
+  def test_non_polymorphic_association_uses_existing_path
     author_model = build_fake_model("Author", columns_hash: {})
     _author_resource = build_fake_resource(author_model)
 

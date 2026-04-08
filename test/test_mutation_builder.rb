@@ -20,8 +20,7 @@ class TestMutationBuilder < Minitest::Test
     end
   end
 
-  # ── Property 6: Mutation column exclusion ───────────────────────────
-  # Validates: Requirements 5.1, 5.2
+  # ── Mutation column exclusion ───────────────────────────
   #
   # Polymorphic _type and _id columns are excluded from writable
   # attributes, while non-polymorphic foreign keys remain included.
@@ -42,7 +41,6 @@ class TestMutationBuilder < Minitest::Test
   end
 
   # Non-polymorphic foreign keys like author_id must NOT be excluded.
-  # Validates: Requirements 5.2
 
   def test_includes_non_polymorphic_foreign_keys
     model = build_fake_model("Comment", column_names: %i[
@@ -59,7 +57,6 @@ class TestMutationBuilder < Minitest::Test
   end
 
   # ── Backward compatibility: no resource_class ───────────────────────
-  # Validates: Requirements 5.1
   #
   # When called without a resource_class, default_writable should return
   # all columns except id, created_at, and updated_at (original behavior).

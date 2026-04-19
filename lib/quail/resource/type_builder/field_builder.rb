@@ -37,9 +37,12 @@ module Quail
         end
 
         def self.define_computed_resolver(type_class, name, blk)
-          safe_blk = method(:safe_call).curry[blk]
           type_class.define_method(name) do
-            blk.arity.abs >= CONTEXT_AWARE_ARITY ? safe_blk.call(object, nil, context) : safe_blk.call(object)
+            if blk.arity.abs >= CONTEXT_AWARE_ARITY
+              FieldBuilder.safe_call(blk, object, nil, context)
+            else
+              FieldBuilder.safe_call(blk, object)
+            end
           end
         end
 

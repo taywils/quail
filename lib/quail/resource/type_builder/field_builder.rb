@@ -5,6 +5,9 @@ module Quail
     module TypeBuilder
       # Defines scalar (column-backed) and computed fields on a GraphQL type.
       module FieldBuilder
+        # Full block signature: |object, args, context|
+        CONTEXT_AWARE_ARITY = 3
+
         def self.define_column_fields(type_class, model, attrs)
           attrs.each do |name, config|
             next unless config[:type] == :column
@@ -29,13 +32,21 @@ module Quail
         def self.define_single_computed_field(type_class, name, config)
           gql_type = config[:graphql_type] || GraphQL::Types::String
           nullable = config[:null].nil? || config[:null]
-          blk = config[:block]
           type_class.field name, gql_type, null: nullable
-          if blk.arity.abs >= 3
-            type_class.define_method(name) { blk.call(object, nil, context) }
-          else
-            type_class.define_method(name) { blk.call(object) }
+          define_computed_resolver(type_class, name, config[:block])
+        end
+
+        def self.define_computed_resolver(type_class, name, blk)
+          safe_blk = method(:safe_call).curry[blk]
+          type_class.define_method(name) do
+            blk.arity.abs >= CONTEXT_AWARE_ARITY ? safe_blk.call(object, nil, context) : safe_blk.call(object)
           end
+        end
+
+        def self.safe_call(blk, *)
+          blk.call(*)
+        rescue LocalJumpError => e
+          e.exit_value
         end
       end
     end

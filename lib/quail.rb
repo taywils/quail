@@ -41,19 +41,25 @@ module Quail
   class Query < GraphQL::Schema::Resolver
     # Allows symbol-based type references that resolve to resource graphql types.
     #
-    # type :user, null: true        # resolves to UserResource.graphql_type
-    # type [:article], null: false  # resolves to [ArticleResource.graphql_type]
+    # type :user, null: true              # resolves to UserResource.graphql_type
+    # type [:article], null: false        # resolves to [ArticleResource.graphql_type]
+    # type :subscription, connection: true, null: false  # resolves to SubscriptionType.connection_type
     # type Types::SessionType, null: false # pass-through, works as normal
     #
-    def self.type(type_arg = nil, **)
+    def self.type(type_arg = nil, null: nil, connection: false)
       if type_arg.is_a?(Symbol)
         resource_name = type_arg
-        super(-> { resolve_resource_type(resource_name) }, **)
+        if connection
+          resolved_type = -> { resolve_resource_type(resource_name).connection_type }
+          super(resolved_type, null: null)
+        else
+          super(-> { resolve_resource_type(resource_name) }, null: null)
+        end
       elsif type_arg.is_a?(Array) && type_arg.length == 1 && type_arg.first.is_a?(Symbol)
         resource_name = type_arg.first
-        super(-> { [resolve_resource_type(resource_name)] }, **)
+        super(-> { [resolve_resource_type(resource_name)] }, null: null)
       else
-        super
+        super(type_arg, null: null)
       end
     end
 

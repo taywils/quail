@@ -228,6 +228,45 @@ end
 
 `Quail::Query` supports symbol-based type references — `:article` resolves to `ArticleResource.graphql_type` automatically. Classes in `app/graphql/queries/` that inherit from `Quail::Query` are discovered and added to the schema.
 
+#### Connection Types (Cursor Pagination)
+
+By default, `type [:article]` returns a plain array. If you want Relay-style cursor pagination on a custom query, pass `connection: true` to return a connection type instead:
+
+```ruby
+# app/graphql/queries/my_articles.rb
+class MyArticles < Quail::Query
+  type :article, connection: true, null: false
+
+  def resolve
+    context[:current_user].articles.order(created_at: :desc)
+  end
+end
+```
+
+This exposes the query with `first`, `after`, `before`, and `last` arguments and returns an `ArticleTypeConnection` with `edges`, `nodes`, and `pageInfo` — the same connection type that Quail auto-generates for resource list queries. Return an ActiveRecord relation from `resolve` and graphql-ruby handles the cursor slicing automatically.
+
+A typical client query looks like:
+
+```graphql
+query MyArticles($first: Int!, $after: String) {
+  myArticles(first: $first, after: $after) {
+    edges {
+      cursor
+      node {
+        id
+        title
+      }
+    }
+    pageInfo {
+      endCursor
+      hasNextPage
+    }
+  }
+}
+```
+
+Use `connection: true` whenever a query could return a large or unbounded result set. Plain array types (`type [:article]`) are still fine for small, bounded collections.
+
 > **Autoloading note:** The Quail railtie registers `app/graphql/resources/`, `app/graphql/queries/`, `app/graphql/mutations/`, and `app/graphql/subscriptions/` as Zeitwerk autoload roots. This means classes in those directories must be top-level — do not wrap them in a `Queries::`, `Mutations::`, `Subscriptions::`, or `Resources::` module. For example, `app/graphql/queries/search_articles.rb` should define `SearchArticles`, not `Queries::SearchArticles`. The `app/graphql/types/` directory is excluded from this and retains the `Types::` namespace as usual.
 
 ### Custom Subscription Override
@@ -384,6 +423,38 @@ class AppSchema < GraphQL::Schema
   Quail::SchemaBuilder.call(self)
 end
 ```
+
+## Dataloader & N+1 Prevention
+
+Quail enables `GraphQL::Dataloader` on your schema automatically via `SchemaBuilder.install_defaults`. This means batched, lazy-loaded resolution is available out of the box — you don't need to add `use GraphQL::Dataloader` yourself.
+
+### What this gives you
+
+When graphql-ruby resolves nested associations (e.g., a list of subscriptions each loading their associated user and profile), the dataloader batches those loads into fewer queries instead of issuing one query per record. This prevents the classic N+1 problem that plagues deeply nested GraphQL queries.
+
+### Eager loading in custom queries
+
+For custom queries that return relations with known association depth, use ActiveRecord's `includes` to preload associations in a single pass:
+
+```ruby
+class MySubscribers < Quail::Query
+  type :subscription, connection: true, null: false
+
+  def resolve
+    Subscription.where(user: context[:current_user])
+                .includes(subscriber: { profile: { avatar_attachment: :blob } })
+                .order(created_at: :desc)
+  end
+end
+```
+
+The `includes` call tells ActiveRecord to batch-load the `subscriber`, `profile`, and Active Storage `avatar_attachment` associations upfront. Combined with the dataloader, this keeps query count constant regardless of page size.
+
+### Guidelines
+
+- Use `includes` in custom `Quail::Query` resolvers when you know which associations the client will request. This is the most effective way to prevent N+1s in practice.
+- For auto-generated resource queries, the dataloader handles batching at the GraphQL resolver level — no extra configuration needed.
+- If you override `SchemaBuilder.install_defaults` or set your own `dataloader_class`, the automatic setup is skipped and you're responsible for configuring the dataloader yourself.
 
 ## Configuration
 

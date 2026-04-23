@@ -45,8 +45,13 @@ unless defined?(ActionController)
   end
 end
 
+# Suppress method-redefinition warnings when graphql-ruby's Railtie and railties
+# re-open the stub Rails::Railtie class defined above.
+original_verbose = $VERBOSE
+$VERBOSE = nil
 require "graphql"
 require "quail"
+$VERBOSE = original_verbose
 
 require "minitest/autorun"
 

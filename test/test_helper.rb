@@ -1,6 +1,11 @@
 # frozen_string_literal: true
 
 $LOAD_PATH.unshift File.expand_path("../lib", __dir__)
+<<<<<<< Updated upstream
+=======
+<<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
 
 # ── Lightweight Rails / ActiveRecord stubs ──────────────────────────────
 # These let us load the gem without pulling in a full Rails application.
@@ -29,6 +34,10 @@ unless defined?(Rails)
       def self.rake_tasks; end
     end
   end
+<<<<<<< Updated upstream
+=======
+
+>>>>>>> Stashed changes
 end
 
 unless defined?(ActionCable)
@@ -45,8 +54,18 @@ unless defined?(ActionController)
   end
 end
 
+<<<<<<< Updated upstream
 require "graphql"
+=======
+# Suppress method-redefinition warnings when graphql-ruby's Railtie and railties
+# re-open the stub Rails::Railtie class defined above.
+original_verbose = $VERBOSE
+$VERBOSE = nil
+require "graphql"
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
 require "quail"
+$VERBOSE = original_verbose
 
 require "minitest/autorun"
 

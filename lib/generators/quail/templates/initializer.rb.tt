@@ -1,0 +1,5 @@
+Rails.application.config.quail.schema_class = "<%= schema_name %>"
+
+# Uncomment to use custom base classes from your app:
+# Quail.base_object_class = Types::BaseObject
+# Quail.base_mutation_class = Mutations::BaseMutation

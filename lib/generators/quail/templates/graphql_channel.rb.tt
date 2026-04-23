@@ -1,0 +1,4 @@
+# Default Quail subscription channel.
+# For most apps, this just works out of the box.
+class GraphqlChannel < Quail::Channel
+end

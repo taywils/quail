@@ -7,7 +7,19 @@ class TestQuail < Minitest::Test
     refute_nil ::Quail::VERSION
   end
 
-  def test_it_does_something_useful
-    assert false
+  def test_registry_starts_empty
+    # Clear any leftover state
+    Quail.instance_variable_set(:@registry, nil)
+    assert_empty Quail.registry
+  end
+
+  def test_extra_mutations_starts_empty
+    Quail.instance_variable_set(:@extra_mutations, nil)
+    assert_empty Quail.extra_mutations
+  end
+
+  def test_extra_queries_starts_empty
+    Quail.instance_variable_set(:@extra_queries, nil)
+    assert_empty Quail.extra_queries
   end
 end

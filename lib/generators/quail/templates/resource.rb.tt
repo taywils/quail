@@ -1,0 +1,23 @@
+class <%= class_name %>Resource
+  include Quail::Resource
+<% if attribute_names.any? -%>
+
+  attributes <%= attribute_names.map { |a| ":#{a}" }.join(", ") %>
+<% end -%>
+<% if association_lines.any? -%>
+
+<%= association_lines.join("\n") %>
+<% end -%>
+<% if writable_attribute_names.any? -%>
+
+  writable_attributes <%= writable_attribute_names.map { |a| ":#{a}" }.join(", ") %>
+<% end -%>
+<% if options[:skip_mutations].any? -%>
+
+  skip_mutations <%= skip_mutations_list %>
+<% end -%>
+<% if options[:subscribe_on].any? -%>
+
+  subscribe_on <%= subscribe_on_list %>
+<% end -%>
+end

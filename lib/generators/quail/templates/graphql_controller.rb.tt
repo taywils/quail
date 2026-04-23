@@ -1,0 +1,40 @@
+class GraphqlController < ApplicationController
+  # If accessing from outside this domain, nullify the session
+  # This allows for outside API access while preventing CSRF attacks,
+  # but you'll have to authenticate your user separately
+  # protect_from_forgery with: :null_session
+
+  def execute
+    result = <%= schema_name %>.execute(
+      params[:query],
+      variables: normalize_request_params(params[:variables]),
+      context: {
+        # Bring Your Own Auth - add your current_user here:
+        # current_user: current_user,
+      },
+      operation_name: params[:operationName]
+    )
+    render json: result
+  rescue StandardError => e
+    raise e unless Rails.env.development?
+    handle_error_in_development(e)
+  end
+
+  private
+
+  def normalize_request_params(request_params)
+    case request_params
+    when String then request_params.present? ? JSON.parse(request_params) : {}
+    when Hash then request_params
+    when ActionController::Parameters then request_params.to_unsafe_hash
+    when nil then {}
+    else raise ArgumentError, "Unexpected parameter: #{request_params}"
+    end
+  end
+
+  def handle_error_in_development(e)
+    logger.error e.message
+    logger.error e.backtrace.join("\n")
+    render json: { errors: [{ message: e.message, backtrace: e.backtrace }], data: {} }, status: 500
+  end
+end

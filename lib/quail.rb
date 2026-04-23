@@ -47,21 +47,22 @@ module Quail
     # type Types::SessionType, null: false # pass-through, works as normal
     #
     def self.type(type_arg = nil, null: nil, connection: false)
+      resolved = resolve_type_arg(type_arg, connection: connection)
+      super(resolved, null: null)
+    end
+
+    def self.resolve_type_arg(type_arg, connection: false)
       if type_arg.is_a?(Symbol)
-        resource_name = type_arg
-        if connection
-          resolved_type = -> { resolve_resource_type(resource_name).connection_type }
-          super(resolved_type, null: null)
-        else
-          super(-> { resolve_resource_type(resource_name) }, null: null)
-        end
+        name = type_arg
+        connection ? -> { resolve_resource_type(name).connection_type } : -> { resolve_resource_type(name) }
       elsif type_arg.is_a?(Array) && type_arg.length == 1 && type_arg.first.is_a?(Symbol)
-        resource_name = type_arg.first
-        super(-> { [resolve_resource_type(resource_name)] }, null: null)
+        name = type_arg.first
+        -> { [resolve_resource_type(name)] }
       else
-        super(type_arg, null: null)
+        type_arg
       end
     end
+    private_class_method :resolve_type_arg
 
     def self.resolve_resource_type(name)
       klass = "#{name.to_s.camelize}Resource".constantize

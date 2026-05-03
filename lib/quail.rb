@@ -24,6 +24,7 @@ module Quail
   Object = GraphQL::Schema::Object
   InputObject = GraphQL::Schema::InputObject
   Enum = GraphQL::Schema::Enum
+  Schema = GraphQL::Schema
 
   # Base mutation class with subscription trigger helper.
   class Mutation < GraphQL::Schema::RelayClassicMutation

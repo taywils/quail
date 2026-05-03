@@ -1,10 +1,11 @@
 <div align="center">
   <img src="./quail_logo_new.svg" alt="Quail Logo" width="320">
+
+  <strong> A Rails-first GraphQL library with a declarative, [Alba](https://github.com/okuramasafumi/alba)-inspired DSL built on top of [graphql-ruby](https://github.com/rmosolgo/graphql-ruby).</strong>
+
 </div>
 
 > ⚠️ **This gem is under active development and has not been published to RubyGems. Please do not use in production.**
-
-A Rails-first GraphQL library with a declarative, [Alba](https://github.com/okuramasafumi/alba)-inspired DSL built on top of [graphql-ruby](https://github.com/rmosolgo/graphql-ruby).
 
 Quail exists because working with GraphQL in Rails shouldn't feel like leaving Rails. The philosophy is straightforward:
 

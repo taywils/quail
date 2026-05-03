@@ -1,4 +1,6 @@
-# Quail
+<div align="center">
+  <img src="./quail_logo_new.svg" alt="Quail Logo" width="320">
+</div>
 
 > ⚠️ **This gem is under active development and has not been published to RubyGems. Please do not use in production.**
 

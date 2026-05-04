@@ -19,14 +19,9 @@ Quail exists because working with GraphQL in Rails shouldn't feel like leaving R
 
 Add Quail to your Gemfile:
 
-```bash
-bundle add quail
-```
-
-Or install it directly:
-
-```bash
-gem install quail
+> ⚠️ **Reminder: This gem is under active development!**
+```Gemfile
+gem "quail", git: "https://github.com/taywils/quail.git", branch: "main"
 ```
 
 ## Quick Start

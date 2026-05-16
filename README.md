@@ -22,7 +22,9 @@ rails generate quail:install
 
 ## Documentation
 
-📖 **Full documentation:** [Quail Docs](https://quail.taywils.me/)
+📖 **Full documentation:** [Quail Docs Website](https://quail.taywils.me/)
+
+📂 **Documentation source:** [quail-docs Github Repo](https://github.com/taywils/quail-docs)
 
 The docs site covers the resource DSL, mutations, queries, subscriptions, custom types, authentication wiring, and more.
 

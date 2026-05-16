@@ -69,6 +69,13 @@ module Quail
           @mutation_overrides ||= {}
         end
 
+        # Resolves mutation override values, constantizing strings lazily.
+        def resolved_mutation_overrides
+          mutation_overrides.transform_values do |klass|
+            klass.is_a?(String) ? klass.constantize : klass
+          end
+        end
+
         def writable_attributes(*names)
           if names.any?
             @writable_attributes = names.map(&:to_sym)

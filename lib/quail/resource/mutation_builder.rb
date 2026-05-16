@@ -9,7 +9,7 @@ module Quail
     module MutationBuilder # rubocop:disable Metrics/ModuleLength
       def self.call(resource_class)
         skipped = resource_class.skipped_mutations
-        overrides = resource_class.mutation_overrides
+        overrides = resource_class.resolved_mutation_overrides
         ctx = MutationContext.new(resource_class)
         mutations = {}
 

@@ -25,8 +25,14 @@ module Quail
 
       def self.resolve_class(file, dir, base_class)
         relative = Pathname.new(file).relative_path_from(Rails.root.join("app/graphql/#{dir}"))
-        class_name = "#{dir.camelize}::#{relative.to_s.delete_suffix(".rb").camelize}"
-        klass = class_name.constantize
+        base_name = relative.to_s.delete_suffix(".rb").camelize
+
+        # Try top-level constant first (autoload root convention), fall back to namespaced
+        klass = begin
+          base_name.constantize
+        rescue NameError
+          "#{dir.camelize}::#{base_name}".constantize
+        end
         return nil unless klass < base_class
 
         [klass.name.demodulize.camelize(:lower).to_sym, klass]

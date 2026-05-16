@@ -18,6 +18,17 @@ module Quail
       end
     end
 
+    # Tell Zeitwerk to ignore these subdirectories from the parent app/graphql/ root
+    # so they are only loaded as top-level autoload roots (no module namespace).
+    initializer "quail.zeitwerk_ignore", before: :setup_main_autoloader do
+      Rails.autoloaders.main.ignore(
+        Rails.root.join("app/graphql/resources"),
+        Rails.root.join("app/graphql/queries"),
+        Rails.root.join("app/graphql/mutations"),
+        Rails.root.join("app/graphql/subscriptions")
+      )
+    end
+
     config.after_initialize do |app|
       schema = app.config.quail.schema_class
       app.config.quail.schema_class = schema.constantize if schema.is_a?(String)

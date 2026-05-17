@@ -27,3 +27,7 @@ Style/Documentation:
 Metrics:
   Exclude:
     - "test/**/*"
+
+Naming/FileName:
+  Exclude:
+    - 'lib/quail-graphql.rb'

@@ -2,6 +2,8 @@
   <img src="./quail_logo_new.svg" alt="Quail Logo" width="320">
 
   <strong>A Rails-first GraphQL library with a declarative, <a href="https://github.com/okuramasafumi/alba">Alba</a>-inspired DSL built on top of <a href="https://github.com/rmosolgo/graphql-ruby">graphql-ruby</a>.</strong>
+
+   [![Ruby Style Guide](https://img.shields.io/badge/code_style-rubocop-brightgreen.svg)](https://github.com/rubocop/rubocop)
 </div>
 
 > ⚠️ **This gem is under active development and has not been published to RubyGems. Please do not use in production.**

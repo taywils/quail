@@ -12,7 +12,7 @@ Gem::Specification.new do |spec|
   spec.description = "Wraps graphql-ruby with a convention-over-configuration approach. " \
                      "Declare resources with a simple DSL and get types, queries, mutations, " \
                      "and subscriptions auto-generated from your ActiveRecord models."
-  spec.homepage = "https://github.com/taywils/quail"
+  spec.homepage = "https://quail.taywils.me/"
   spec.license = "MIT"
   spec.required_ruby_version = ">= 3.2.0"
 

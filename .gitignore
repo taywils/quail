@@ -7,3 +7,24 @@
 /spec/reports/
 /tmp/
 /.kiro/
+*.gem
+
+/.ruby-lsp/
+Gemfile.lock
+
+# Kiro IDE
+.kiro/
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+
+# VSCode
+.vscode/
+*.code-workspace
+
+# Mise
+mise.toml

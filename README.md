@@ -3,17 +3,17 @@
 
   <strong>A Rails-first GraphQL library with a declarative, <a href="https://github.com/okuramasafumi/alba">Alba</a>-inspired DSL built on top of <a href="https://github.com/rmosolgo/graphql-ruby">graphql-ruby</a>.</strong>
 
-   [![Ruby Style Guide](https://img.shields.io/badge/code_style-rubocop-brightgreen.svg)](https://github.com/rubocop/rubocop)
+  [![Gem Version](https://badge.fury.io/rb/quail-graphql.svg)](https://badge.fury.io/rb/quail-graphql)
+  [![Ruby Style Guide](https://img.shields.io/badge/code_style-rubocop-brightgreen.svg)](https://github.com/rubocop/rubocop)
+  [![Gem Downloads](https://img.shields.io/gem/dt/quail-graphql)](https://rubygems.org/gems/quail-graphql)
 </div>
-
-> ⚠️ **This gem is under active development and has not been published to RubyGems. Please do not use in production.**
 
 ## Installation
 
 Add Quail to your Gemfile:
 
 ```Gemfile
-gem "quail", git: "https://github.com/taywils/quail.git", branch: "main"
+gem "quail-graphql"
 ```
 
 ## Quick Start

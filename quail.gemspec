@@ -3,7 +3,7 @@
 require_relative "lib/quail/version"
 
 Gem::Specification.new do |spec|
-  spec.name = "quail"
+  spec.name = "quail-graphql"
   spec.version = Quail::VERSION
   spec.authors = ["Demetrious Wilson"]
   spec.email = ["demetriouswilson@gmail.com"]
